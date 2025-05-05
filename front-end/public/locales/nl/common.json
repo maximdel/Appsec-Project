@@ -1,0 +1,162 @@
+{
+    "app.title": "GoalPro App",
+    "app.loading": "Laden...",
+    "app.errorFetchingUser": "Fout bij het ophalen van gebruiker",
+    "errorFetchingTeams": "Fout bij het ophalen van teams: {{message}}",
+    "general.error": "Er is een fout opgetreden. Probeer het later opnieuw.",
+    "permissions": {
+        "unauthorized": "U bent niet geautoriseerd om deze pagina te bekijken."
+    },
+    "home": {
+        "welcome": {
+            "text-1": "Welkom bij de GoalPro App!",
+            "text-2": "Deze app is ontworpen om u te helpen uw favoriete voetbalteams en spelers bij te houden.",
+            "text-3": "U kunt de laatste wedstrijden, spelers en teams bekijken"
+        },
+        "username": "Gebruikersnaam",
+        "password": "Wachtwoord",
+        "role": "Rol",
+        "needLogin": "Log in om de laatste wedstrijden te zien"
+    },
+    "login": {
+        "title": "Inloggen",
+        "success": "Succesvol ingelogd. U wordt doorgestuurd naar de homepage...",
+        "validate": {
+            "name": "Naam is verplicht",
+            "password": "Wachtwoord is verplicht"
+        },
+        "label": {
+            "username": "Gebruikersnaam:",
+            "password": "Wachtwoord:"
+        }
+    },
+
+    "teams": {
+        "searchPlaceholder": "Zoek naar teams...",
+        "noFound": "Geen teams gevonden.",
+        "loading": "Teams laden...",
+        "errorFetchingTeams": "Fout bij het ophalen van teams"
+    },
+    "team": {
+        "title": "Team",
+        "details": "Teamdetails",
+        "teamDetails": "Teamdetails",
+        "name": "Teamnaam",
+        "description": "Beschrijving",
+        "enterDescription": "Voer teambeschrijving in",
+        "coach": "Coach",
+        "selectCoach": "Selecteer een coach",
+        "players": "Spelers",
+        "noPlayers": "Geen spelers beschikbaar.",
+        "selectUser": "Selecteer een gebruiker",
+        "selectUserToAdd": "Selecteer een gebruiker om toe te voegen.",
+        "notLoaded": "Teamgegevens zijn niet geladen. Probeer het opnieuw.",
+        "failedToAddPlayer": "Kan speler niet toevoegen. Probeer het opnieuw.",
+        "addPlayerError": "Er is een fout opgetreden bij het toevoegen van de speler. Probeer het later opnieuw.",
+        "failedToUpdate": "Kan team niet bijwerken. Probeer het opnieuw.",
+        "updateError": "Er is een fout opgetreden bij het bijwerken van het team. Probeer het later opnieuw.",
+        "loadingDetails": "Teamdetails laden..."
+    },
+    "stats": {
+        "totalGoals": "Totaal aantal doelpunten"
+    },
+    "users": {
+        "noFound": "Geen gebruikers gevonden",
+        "searchPlaceholder": "Zoek naar gebruikers..."
+    },
+    "user": {
+        "noFound": "Gebruiker niet gevonden",
+        "team": "Team",
+        "email": "E-mail",
+        "coach": "Coach van het team",
+        "description": "Beschrijving",
+        "edit": {
+            "title": "Profiel bewerken",
+            "success": "Profiel succesvol bijgewerkt",
+            "validate": {
+                "firstName": "Voornaam is verplicht",
+                "lastName": "Achternaam is verplicht",
+                "email": "E-mail is verplicht",
+                "emailValid": "E-mail is niet geldig"
+            }
+        }
+    },
+    "matches": {
+        "searchPlaceholder": "Zoek naar wedstrijden...",
+        "latest": "Laatste wedstrijden",
+        "noRecent": "Geen recente wedstrijden beschikbaar.",
+        "loading": "Wedstrijden laden...",
+        "error": "Fout bij het ophalen van wedstrijden: {{message}}",
+        "noFound": "Geen wedstrijden gevonden."
+    },
+    "match": {
+        "loading": "Laden...",
+        "deleteGoalFailed": "Doelpunt verwijderen mislukt.",
+        "errorFetching": "Fout bij het ophalen van de wedstrijd: {{message}}",
+        "details": "Wedstrijddetails",
+        "matchId": "Wedstrijd-ID",
+        "score": "Score",
+        "location": "Locatie",
+        "dateTime": "Datum & Tijd",
+        "unknown": "Onbekend",
+        "unknownTeam": "Onbekend team"
+    },
+    "register": {
+        "title": "Registreren",
+        "success": "Registratie succesvol. U wordt doorgestuurd naar de inlogpagina...",
+        "validate": {
+            "username": "Naam is verplicht",
+            "firstName": "Voornaam is verplicht",
+            "lastName": "Achternaam is verplicht",
+            "birthDate": "Geboortedatum is verplicht",
+            "password": "Wachtwoord is verplicht",
+            "email": "E-mail is verplicht",
+            "emailValid": "E-mail is niet geldig"
+        },
+        "label": {
+            "username": "Gebruikersnaam:",
+            "password": "Wachtwoord:",
+            "firstName": "Voornaam:",
+            "lastName": "Achternaam:",
+            "email": "E-mail:",
+            "birthDate": "Geboortedatum:"
+        }
+    },
+    "header": {
+        "welcome": "Welkom",
+        "nav": {
+            "home": "Home",
+            "overview": "Overzicht",
+            "players": "Spelers",
+            "teams": "Teams",
+            "matches": "Wedstrijden",
+            "users": "Gebruikers",
+            "myTeam": "Mijn Team",
+            "edit": "Profiel bewerken",
+            "login": "Inloggen",
+            "register": "Registreren",
+            "logout": "Uitloggen"
+        }
+    },
+    "players": {
+        "searchPlaceholder": "Zoek naar spelers...",
+        "loading": "Spelers laden...",
+        "error": "Fout bij het ophalen van spelers: {{message}}",
+        "noFound": "Geen spelers gevonden."
+    },
+
+    "modal": {
+        "sessionExpiredTitle": "Sessie verlopen",
+        "sessionExpired": "Uw sessie is verlopen. Log opnieuw in."
+    },
+
+    "buttons": {
+        "validate": "Valideren",
+        "login": "Inloggen",
+        "register": "Registreren",
+        "addPlayer": "Speler toevoegen",
+        "cancel": "Annuleren",
+        "addToTeam": "Toevoegen aan team",
+        "save": "Opslaan"
+    }
+}
