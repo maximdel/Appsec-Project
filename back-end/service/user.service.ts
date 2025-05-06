@@ -2,7 +2,6 @@ import { Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { addHours } from 'date-fns';
-import { ca } from 'date-fns/locale';
 import { UnauthorizedError } from 'express-jwt';
 import { User } from '../model/user';
 import teamDb from '../repository/team.db';
@@ -10,75 +9,54 @@ import userDb from '../repository/user.db';
 import { AuthenticationResponse, UserInput } from '../types';
 import { generateJwtToken } from '../util/jwt';
 import { sendMail } from '../util/mailer';
-ca;
-const getAllPlayers = async (): Promise<User[]> => {
+
+// Fetch all players and strip passwords
+const getAllPlayers = async (): Promise<any[]> => {
     const players = await userDb.getAllPlayers();
-    if (!players) {
-        throw new Error('No players found.');
-    }
-    return players;
+    if (!players) throw new Error('No players found.');
+    return players.map((u) => u.toPublic());
 };
 
-const getAllUsers = async ({ role }: { role: string }): Promise<User[]> => {
-    if (role === 'ADMIN') {
-        return userDb.getAllUsers();
-    } else {
+// Fetch all users (admin only) and strip passwords
+const getAllUsers = async ({ role }: { role: string }): Promise<any[]> => {
+    if (role !== 'ADMIN') {
         throw new UnauthorizedError('credentials_required', {
             message: 'You are not authorized to access this resource',
         });
     }
+    const users = await userDb.getAllUsers();
+    return users.map((u) => u.toPublic());
 };
 
-const updateUser = async (userId: number, editedUser: UserInput): Promise<User | null> => {
+// Update user and return public view
+const updateUser = async (userId: number, editedUser: UserInput): Promise<any | null> => {
     const user = await userDb.getUserById(userId);
+    if (!user) return null;
 
-    // Return null if the user is not found
-    if (!user) {
-        return null;
-    }
-
-    // Destructure properties from editedUser
     const { playerOfTeam, description, email, password, firstName, lastName, birthDate } =
         editedUser;
 
-    // Update team if provided and different
-    if (
-        playerOfTeam?.id !== undefined &&
-        playerOfTeam.id !== null &&
-        playerOfTeam.id !== user.getPlayerOfTeam()?.getId()
-    ) {
+    if (playerOfTeam?.id != null && playerOfTeam.id !== user.getPlayerOfTeam()?.getId()) {
         const team = await teamDb.getTeamById(playerOfTeam.id);
-        console.log('team', team);
-        if (!team) {
-            throw new Error('Team does not exist');
-        }
-        user.setPlayerOfTeam(team); // Use the actual Team object
+        if (!team) throw new Error('Team does not exist');
+        user.setPlayerOfTeam(team);
     }
 
-    // Update description if provided and different
-    if (
-        description !== undefined &&
-        description !== null &&
-        user.getDescription() !== description
-    ) {
+    if (description != null && user.getDescription() !== description) {
         user.setDescription(description);
     }
 
-    // Update email if provided and different
-    if (email !== undefined && email !== null && user.getEmail() !== email) {
+    if (email != null && user.getEmail() !== email) {
         const existingEmail = await userDb.getUserByEmail(email);
-        if (existingEmail) {
-            throw new Error('Email already exists');
-        }
+        if (existingEmail) throw new Error('Email already exists');
         user.setEmail(email);
     }
 
-    // Update password if provided and different
-    if (password !== undefined && password !== null && user.getPassword() !== password) {
-        user.setPassword(password);
+    if (password != null && user.getPassword() !== password) {
+        await user.setPassword(password);
     }
 
-    const updatedUser = new User({
+    const updatedModel = new User({
         id: userId,
         username: user.getUsername(),
         password: user.getPassword(),
@@ -91,53 +69,54 @@ const updateUser = async (userId: number, editedUser: UserInput): Promise<User |
         description: description ?? user.getDescription(),
     });
 
-    // Save the updated user in the database
-    return userDb.updateUser(updatedUser);
+    const saved = await userDb.updateUser(updatedModel);
+    return saved.toPublic();
 };
 
-const getUserById = async (userId: number): Promise<User> => {
+// Fetch by ID and strip password
+const getUserById = async (userId: number): Promise<any> => {
     const user = await userDb.getUserById(userId);
-    if (!user) {
-        throw new Error(`User with username: ${userId} does not exist.`);
-    }
-    return user;
+    if (!user) throw new Error(`User with ID ${userId} does not exist.`);
+    return user.toPublic();
 };
 
-const getUserByUsername = async ({ username }: { username: string }): Promise<User> => {
+// Fetch by username and strip password
+const getUserByUsername = async ({ username }: { username: string }): Promise<any> => {
     const user = await userDb.getUserByUsername({ username });
-    if (!user) {
-        throw new Error(`User with username: ${username} does not exist.`);
-    }
-    return user;
+    if (!user) throw new Error(`User with username: ${username} does not exist.`);
+    return user.toPublic();
 };
 
-const getUsersByRole = async (role: Role): Promise<User[]> => {
+// Users by role (no password)
+const getUsersByRole = async (role: Role): Promise<any[]> => {
     const users = await userDb.getUsersByRole(role);
-    if (!users) {
-        throw new Error('No users found.');
-    }
-    return users;
+    if (!users) throw new Error('No users found.');
+    return users.map((u) => u.toPublic());
 };
 
+// Authentication response remains unchanged—but uses raw user for check
 const authenticate = async ({ username, password }: UserInput): Promise<AuthenticationResponse> => {
-    const user = await getUserByUsername({ username });
+    // for JSON response we need the public user details
+    const publicUser = await getUserByUsername({ username });
+    // for password check we need the hashed pw
+    const rawUser = await userDb.getUserByUsername({ username })!;
+    if (!rawUser) throw new Error('User not found.');
 
-    const isValidPassword = await bcrypt.compare(password, user.getPassword());
+    const isValid = await bcrypt.compare(password, rawUser.getPassword());
+    if (!isValid) throw new Error('Incorrect password.');
 
-    if (!isValidPassword) {
-        throw new Error('Incorrect password.');
-    }
-    const teamId = user.getCoachOfTeam()?.getId() ?? user.getPlayerOfTeam()?.getId();
+    const teamId = rawUser.getCoachOfTeam()?.getId() ?? rawUser.getPlayerOfTeam()?.getId();
 
     return {
-        token: generateJwtToken({ username, role: user.getRole() }),
-        username: username,
-        fullname: `${user.getFirstName()} ${user.getLastName()}`,
-        role: user.getRole(),
-        ...(teamId !== undefined && { teamId: teamId }),
+        token: generateJwtToken({ username, role: rawUser.getRole() }),
+        username,
+        fullname: `${rawUser.getFirstName()} ${rawUser.getLastName()}`,
+        role: rawUser.getRole(),
+        ...(teamId !== undefined && { teamId }),
     };
 };
 
+// Create user and return public view
 const createUser = async ({
     username,
     password,
@@ -145,57 +124,43 @@ const createUser = async ({
     lastName,
     email,
     birthDate,
-}: UserInput): Promise<User> => {
-    const existingUser = await userDb.getUserByUsername({ username });
-    if (existingUser) {
-        throw new Error(`User with username ${username} is already registered.`);
-    }
+}: UserInput): Promise<any> => {
+    const exists = await userDb.getUserByUsername({ username });
+    if (exists) throw new Error(`User with username ${username} is already registered.`);
 
-    const hashedPassword = await bcrypt.hash(password, 12);
-    const user = new User({
-        username,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        email,
-        birthDate,
-    });
-
-    return await userDb.createUser(user);
+    const hashed = await bcrypt.hash(password, 12);
+    const model = new User({ username, password: hashed, firstName, lastName, email, birthDate });
+    const newUser = await userDb.createUser(model);
+    return newUser.toPublic();
 };
 
+// Remove user stays the same
 const removeUser = async ({ username }: { username: string }): Promise<string> => {
-    const user = await getUserByUsername({ username });
-    if (user) {
-        return await userDb.removeUser(username);
-    }
-    throw new Error(`User with username ${username} does not exist.`);
+    const exists = await userDb.getUserByUsername({ username });
+    if (!exists) throw new Error(`User with username ${username} does not exist.`);
+    return userDb.removeUser(username);
 };
 
-// 1) Forgot-password flow
+// Forgot-password kick-off (returns only a message)
 export async function forgotPassword({ username }: { username: string }): Promise<string> {
-    // lookup (throws if not found)
+    // we want to verify user exists, but publicUser has no pw
     const user = await getUserByUsername({ username });
 
-    // token + expiry
     const token = randomBytes(32).toString('hex');
     const expires = addHours(new Date(), 1);
-
-    // store in DB
     await userDb.storeResetToken(username, token, expires);
 
-    // send the email
     const url = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
     await sendMail({
-        to: user.getEmail(),
+        to: user.username,
         subject: 'Password reset request',
-        text: `Hi ${user.getFirstName()},\nClick here: ${url}\nExpires in 1 hour.`,
+        text: `Hi ${user.firstName},\nClick here: ${url}\nExpires in 1 hour.`,
     });
 
     return 'If that username is registered, you will receive a reset link shortly.';
 }
 
-// 2) Reset-password flow
+// Reset-password finalization
 export async function resetPassword({
     token,
     newPassword,
@@ -203,17 +168,12 @@ export async function resetPassword({
     token: string;
     newPassword: string;
 }): Promise<string> {
-    // find+validate token
     const rec = await userDb.findByResetToken(token);
     if (!rec || rec.resetTokenExpires.getTime() < Date.now()) {
         throw new Error('Invalid or expired reset token.');
     }
-
-    // hash and update
     const hashed = await bcrypt.hash(newPassword, 12);
     await userDb.updatePassword(rec.username, hashed);
-
-    // clear the token
     await userDb.clearResetToken(rec.username);
     return 'Password has been reset successfully.';
 }
