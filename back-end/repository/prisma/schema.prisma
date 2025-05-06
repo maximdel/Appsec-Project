@@ -25,6 +25,10 @@ model User {
   playerOfTeamId  Int?       
 
   goals           Goal[]     // Goals scored by this user
+
+  // Password Forgotten feature:
+  resetToken          String?  
+  resetTokenExpires   DateTime?
 }
 
 model Team {

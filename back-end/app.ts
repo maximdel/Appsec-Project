@@ -40,7 +40,15 @@ app.use(
         algorithms: ['HS256'],
         maxAge: `${process.env.JWT_EXPIRES_HOURS}h`, // rejects tokens older than this *since iat*
     }).unless({
-        path: ['/api-docs', /^\/api-docs\/.*/, '/users/register', '/users/login', '/status'],
+        path: [
+            '/api-docs',
+            /^\/api-docs\/.*/,
+            '/users/register',
+            '/users/login',
+            '/users/reset-password',
+            '/users/forgot-password',
+            '/status',
+        ],
     })
 );
 
@@ -49,7 +57,6 @@ app.use('/users', userRouter);
 app.use('/matches', matchRouter);
 app.use('/teams', teamRouter);
 app.use('/goals', goalRouter);
-
 app.get('/status', (req, res) => {
     res.json({ message: 'Back-end is running...' });
 });

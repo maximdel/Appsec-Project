@@ -1,12 +1,16 @@
 import { Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
+import { addHours } from 'date-fns';
+import { ca } from 'date-fns/locale';
 import { UnauthorizedError } from 'express-jwt';
 import { User } from '../model/user';
 import teamDb from '../repository/team.db';
 import userDb from '../repository/user.db';
 import { AuthenticationResponse, UserInput } from '../types';
 import { generateJwtToken } from '../util/jwt';
-
+import { sendMail } from '../util/mailer';
+ca;
 const getAllPlayers = async (): Promise<User[]> => {
     const players = await userDb.getAllPlayers();
     if (!players) {
@@ -168,6 +172,52 @@ const removeUser = async ({ username }: { username: string }): Promise<string> =
     throw new Error(`User with username ${username} does not exist.`);
 };
 
+// 1) Forgot-password flow
+export async function forgotPassword({ username }: { username: string }): Promise<string> {
+    // lookup (throws if not found)
+    const user = await getUserByUsername({ username });
+
+    // token + expiry
+    const token = randomBytes(32).toString('hex');
+    const expires = addHours(new Date(), 1);
+
+    // store in DB
+    await userDb.storeResetToken(username, token, expires);
+
+    // send the email
+    const url = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+    await sendMail({
+        to: user.getEmail(),
+        subject: 'Password reset request',
+        text: `Hi ${user.getFirstName()},\nClick here: ${url}\nExpires in 1 hour.`,
+    });
+
+    return 'If that username is registered, you will receive a reset link shortly.';
+}
+
+// 2) Reset-password flow
+export async function resetPassword({
+    token,
+    newPassword,
+}: {
+    token: string;
+    newPassword: string;
+}): Promise<string> {
+    // find+validate token
+    const rec = await userDb.findByResetToken(token);
+    if (!rec || rec.resetTokenExpires.getTime() < Date.now()) {
+        throw new Error('Invalid or expired reset token.');
+    }
+
+    // hash and update
+    const hashed = await bcrypt.hash(newPassword, 12);
+    await userDb.updatePassword(rec.username, hashed);
+
+    // clear the token
+    await userDb.clearResetToken(rec.username);
+    return 'Password has been reset successfully.';
+}
+
 export default {
     getAllPlayers,
     getAllUsers,
@@ -178,4 +228,6 @@ export default {
     authenticate,
     createUser,
     removeUser,
+    forgotPassword,
+    resetPassword,
 };

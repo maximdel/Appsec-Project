@@ -1,9 +1,9 @@
 import UserService from '@services/UserService';
 import { StatusMessage } from '@types';
 import classNames from 'classnames';
+import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
-import { useTranslation } from 'next-i18next';
 
 const UserLoginForm: React.FC = () => {
     const [name, setName] = useState('');
@@ -135,6 +135,11 @@ const UserLoginForm: React.FC = () => {
                 >
                     {t('buttons.login')}
                 </button>
+                <p className="mt-4 text-sm text-center">
+                    <a href="/forgot-password" className="text-blue-600 hover:underline">
+                        {t('login.forgotPasswordLink')}
+                    </a>
+                </p>
             </form>
         </>
     );

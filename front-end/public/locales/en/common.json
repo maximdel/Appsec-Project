@@ -26,7 +26,8 @@
         "label": {
             "username": "Username:",
             "password": "Password:"
-        }
+        },
+        "forgotPasswordLink": "Forgot your password?"
     },
 
     "teams": {
@@ -157,5 +158,23 @@
         "cancel": "Cancel",
         "addToTeam": "Add to Team",
         "save": "Save"
+    },
+
+    "resetPassword": {
+        "title": "Reset Your Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm Password",
+        "submit": "Save New Password",
+        "loading": "Verifying token…",
+        "invalidToken": "Invalid or missing reset token.",
+        "validate": {
+            "newPassword": "Password must be at least 8 characters.",
+            "match": "Passwords do not match."
+        }
+    },
+    "forgotPassword": {
+        "title": "Forgot Password",
+        "usernameLabel": "Enter your username",
+        "submit": "Send Reset Link"
     }
 }

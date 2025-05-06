@@ -170,6 +170,47 @@ const removeUser = async (username: string): Promise<string> => {
     }
 };
 
+const storeResetToken = async (username: string, token: string, expires: Date): Promise<void> => {
+    await database.user.update({
+        where: { username },
+        data: { resetToken: token, resetTokenExpires: expires },
+    });
+};
+
+// repository/user.db.ts
+
+export const findByResetToken = async (
+    token: string
+): Promise<{ username: string; resetTokenExpires: Date } | null> => {
+    const rec = await database.user.findFirst({
+        where: { resetToken: token },
+        select: { username: true, resetTokenExpires: true },
+    });
+    // If no record, or expiry is null, bail out
+    if (!rec || rec.resetTokenExpires === null) {
+        return null;
+    }
+    // Now TypeScript knows resetTokenExpires is a Date
+    return {
+        username: rec.username,
+        resetTokenExpires: rec.resetTokenExpires,
+    };
+};
+
+const updatePassword = async (username: string, hashedPassword: string): Promise<void> => {
+    await database.user.update({
+        where: { username },
+        data: { password: hashedPassword },
+    });
+};
+
+const clearResetToken = async (username: string): Promise<void> => {
+    await database.user.update({
+        where: { username },
+        data: { resetToken: null, resetTokenExpires: null },
+    });
+};
+
 export default {
     getAllPlayers,
     getAllUsers,
@@ -180,4 +221,8 @@ export default {
     getUserByUsername,
     createUser,
     removeUser,
+    storeResetToken,
+    findByResetToken,
+    updatePassword,
+    clearResetToken,
 };

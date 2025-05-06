@@ -93,6 +93,22 @@ const removeUser = (username: string) => {
     });
 };
 
+export function forgotPassword(username: string) {
+    return fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+    });
+}
+
+export function resetPassword(token: string, newPassword: string) {
+    return fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, newPassword }),
+    });
+}
+
 const UserService = {
     getAllPlayers,
     getAllUsers,
@@ -102,6 +118,8 @@ const UserService = {
     loginUser,
     registerUser,
     removeUser,
+    forgotPassword,
+    resetPassword,
 };
 
 export default UserService;

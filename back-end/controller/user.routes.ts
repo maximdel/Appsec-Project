@@ -374,6 +374,30 @@ userRouter.delete('/:username', async (req, res, next) => {
         next(err);
     }
 });
+// 1) Kick off the flow (by username)
+userRouter.post('/forgot-password', async (req, res, next) => {
+    try {
+        const { username } = req.body as { username: string };
+        const msg = await userService.forgotPassword({ username });
+        res.json({ message: msg });
+    } catch (err) {
+        next(err);
+    }
+});
+
+// 2) Complete the flow
+userRouter.post('/reset-password', async (req, res, next) => {
+    try {
+        const { token, newPassword } = req.body as {
+            token: string;
+            newPassword: string;
+        };
+        const msg = await userService.resetPassword({ token, newPassword });
+        res.json({ message: msg });
+    } catch (err) {
+        next(err);
+    }
+});
 
 /**
  * @swagger

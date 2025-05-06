@@ -28,7 +28,8 @@
         "label": {
             "username": "Gebruikersnaam:",
             "password": "Wachtwoord:"
-        }
+        },
+        "forgotPasswordLink": "Wachtwoord vergeten?"
     },
 
     "teams": {
@@ -158,5 +159,24 @@
         "cancel": "Annuleren",
         "addToTeam": "Toevoegen aan team",
         "save": "Opslaan"
+    },
+
+    "forgotPassword": {
+        "title": "Wachtwoord vergeten",
+        "usernameLabel": "Vul uw gebruikersnaam in",
+        "submit": "Verstuur reset-link"
+    },
+
+    "resetPassword": {
+        "title": "Stel uw wachtwoord opnieuw in",
+        "newPassword": "Nieuw wachtwoord",
+        "confirmPassword": "Bevestig wachtwoord",
+        "submit": "Bewaar nieuw wachtwoord",
+        "loading": "Token wordt gecontroleerd…",
+        "invalidToken": "Ongeldige of verlopen reset-token.",
+        "validate": {
+            "newPassword": "Wachtwoord moet minstens 8 tekens lang zijn.",
+            "match": "Wachtwoorden komen niet overeen."
+        }
     }
 }
