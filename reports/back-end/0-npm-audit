@@ -1,0 +1,99 @@
+# npm audit report
+
+@babel/helpers  <7.26.10
+Severity: moderate
+Babel has inefficient RegExp complexity in generated code with .replace when transpiling named capturing groups - https://github.com/advisories/GHSA-968p-4wvh-cqc8
+fix available via `npm audit fix`
+node_modules/@babel/helpers
+
+@babel/runtime  <7.26.10
+Severity: moderate
+Babel has inefficient RegExp complexity in generated code with .replace when transpiling named capturing groups - https://github.com/advisories/GHSA-968p-4wvh-cqc8
+fix available via `npm audit fix`
+node_modules/@babel/runtime
+
+body-parser  <1.20.3
+Severity: high
+body-parser vulnerable to denial of service when url encoding is enabled - https://github.com/advisories/GHSA-qwcr-r2fm-qrc7
+fix available via `npm audit fix`
+node_modules/express/node_modules/body-parser
+  express  <=4.21.1 || 5.0.0-alpha.1 - 5.0.0
+  Depends on vulnerable versions of body-parser
+  Depends on vulnerable versions of cookie
+  Depends on vulnerable versions of path-to-regexp
+  Depends on vulnerable versions of send
+  Depends on vulnerable versions of serve-static
+  node_modules/express
+
+cookie  <0.7.0
+cookie accepts cookie name, path, and domain with out of bounds characters - https://github.com/advisories/GHSA-pxg6-pf52-xh8x
+fix available via `npm audit fix`
+node_modules/cookie
+
+cross-spawn  7.0.0 - 7.0.4
+Severity: high
+Regular Expression Denial of Service (ReDoS) in cross-spawn - https://github.com/advisories/GHSA-3xgq-45jj-v275
+fix available via `npm audit fix`
+node_modules/cross-spawn
+
+
+libxmljs2  *
+Severity: critical
+libxmljs2 vulnerable to type confusion when parsing specially crafted XML - https://github.com/advisories/GHSA-78h3-pg4x-j8cv
+fix available via `npm audit fix --force`
+Will install @cyclonedx/cyclonedx-npm@1.10.0, which is a breaking change
+node_modules/libxmljs2
+  @cyclonedx/cyclonedx-library  >=1.14.0-rc.0
+  Depends on vulnerable versions of libxmljs2
+  node_modules/@cyclonedx/cyclonedx-library
+    @cyclonedx/cyclonedx-npm  >=1.11.0
+    Depends on vulnerable versions of @cyclonedx/cyclonedx-library
+    node_modules/@cyclonedx/cyclonedx-npm
+
+micromatch  <4.0.8
+Severity: moderate
+Regular Expression Denial of Service (ReDoS) in micromatch - https://github.com/advisories/GHSA-952p-6rrq-rcjv
+fix available via `npm audit fix`
+node_modules/micromatch
+
+nanoid  <3.3.8
+Severity: moderate
+Predictable results in nanoid generation when given non-integer values - https://github.com/advisories/GHSA-mwcw-c2x4-8c55
+fix available via `npm audit fix`
+node_modules/nanoid
+
+path-to-regexp  <=0.1.11
+Severity: high
+Unpatched `path-to-regexp` ReDoS in 0.1.x - https://github.com/advisories/GHSA-rhx6-c78j-4q9w
+path-to-regexp outputs backtracking regular expressions - https://github.com/advisories/GHSA-9wv6-86v2-598j
+fix available via `npm audit fix`
+node_modules/path-to-regexp
+
+semver  7.0.0 - 7.5.1
+Severity: high
+semver vulnerable to Regular Expression Denial of Service - https://github.com/advisories/GHSA-c2qf-rxjj-qqgw
+fix available via `npm audit fix`
+node_modules/simple-update-notifier/node_modules/semver
+  simple-update-notifier  1.0.7 - 1.1.0
+  Depends on vulnerable versions of semver
+  node_modules/simple-update-notifier
+    nodemon  2.0.19 - 2.0.22
+    Depends on vulnerable versions of simple-update-notifier
+    node_modules/nodemon
+
+send  <0.19.0
+send vulnerable to template injection that can lead to XSS - https://github.com/advisories/GHSA-m6fv-jmcg-4jfg
+fix available via `npm audit fix`
+node_modules/send
+  serve-static  <=1.16.0
+  Depends on vulnerable versions of send
+  node_modules/serve-static
+
+
+17 vulnerabilities (3 low, 4 moderate, 7 high, 3 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force

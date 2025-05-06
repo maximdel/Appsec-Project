@@ -88,7 +88,7 @@ const updateUser = async (userId: number, editedUser: UserInput): Promise<User |
     });
 
     // Save the updated user in the database
-    return userDb.updateUser(user);
+    return userDb.updateUser(updatedUser);
 };
 
 const getUserById = async (userId: number): Promise<User> => {

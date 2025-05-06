@@ -1,0 +1,78 @@
+# npm audit report
+
+@babel/helpers  <7.26.10
+Severity: moderate
+Babel has inefficient RegExp complexity in generated code with .replace when transpiling named capturing groups - https://github.com/advisories/GHSA-968p-4wvh-cqc8
+fix available via `npm audit fix`
+node_modules/@babel/helpers
+
+@babel/runtime  <7.26.10
+Severity: moderate
+Babel has inefficient RegExp complexity in generated code with .replace when transpiling named capturing groups - https://github.com/advisories/GHSA-968p-4wvh-cqc8
+fix available via `npm audit fix`
+node_modules/@babel/runtime
+
+braces  <3.0.3
+Severity: high
+Uncontrolled resource consumption in braces - https://github.com/advisories/GHSA-grv7-fg5c-xmjg
+fix available via `npm audit fix --force`
+Will install esbuild-jest@0.4.0, which is a breaking change
+node_modules/sane/node_modules/braces
+  micromatch  <=4.0.7
+  Depends on vulnerable versions of braces
+  node_modules/micromatch
+  node_modules/sane/node_modules/micromatch
+    anymatch  1.2.0 - 2.0.0
+    Depends on vulnerable versions of micromatch
+    node_modules/sane/node_modules/anymatch
+      sane  1.5.0 - 4.1.0
+      Depends on vulnerable versions of anymatch
+      Depends on vulnerable versions of micromatch
+      node_modules/sane
+        jest-haste-map  24.0.0-alpha.0 - 26.6.2
+        Depends on vulnerable versions of sane
+        node_modules/esbuild-jest/node_modules/jest-haste-map
+          @jest/transform  <=26.6.2
+          Depends on vulnerable versions of jest-haste-map
+          node_modules/esbuild-jest/node_modules/@jest/transform
+            babel-jest  24.2.0-alpha.0 - 26.6.3
+            Depends on vulnerable versions of @jest/transform
+            node_modules/esbuild-jest/node_modules/babel-jest
+              esbuild-jest  >=0.5.0-beta.1
+              Depends on vulnerable versions of babel-jest
+              node_modules/esbuild-jest
+
+cross-spawn  7.0.0 - 7.0.4
+Severity: high
+Regular Expression Denial of Service (ReDoS) in cross-spawn - https://github.com/advisories/GHSA-3xgq-45jj-v275
+fix available via `npm audit fix`
+node_modules/cross-spawn
+
+esbuild  <=0.24.2
+Severity: moderate
+esbuild enables any website to send any requests to the development server and read the response - https://github.com/advisories/GHSA-67mh-4wv8-2f99
+fix available via `npm audit fix --force`
+Will install esbuild@0.25.4, which is a breaking change
+node_modules/esbuild
+
+libxmljs2  *
+Severity: critical
+libxmljs2 vulnerable to type confusion when parsing specially crafted XML - https://github.com/advisories/GHSA-78h3-pg4x-j8cv
+fix available via `npm audit fix --force`
+Will install @cyclonedx/cyclonedx-npm@1.10.0, which is a breaking change
+node_modules/libxmljs2
+  @cyclonedx/cyclonedx-library  >=1.14.0-rc.0
+  Depends on vulnerable versions of libxmljs2
+  node_modules/@cyclonedx/cyclonedx-library
+    @cyclonedx/cyclonedx-npm  >=1.11.0
+    Depends on vulnerable versions of @cyclonedx/cyclonedx-library
+    node_modules/@cyclonedx/cyclonedx-npm
+
+
+15 vulnerabilities (9 moderate, 3 high, 3 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force

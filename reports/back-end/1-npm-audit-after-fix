@@ -1,0 +1,34 @@
+# npm audit report
+
+libxmljs2  *
+Severity: critical
+libxmljs2 vulnerable to type confusion when parsing specially crafted XML - https://github.com/advisories/GHSA-78h3-pg4x-j8cv
+fix available via `npm audit fix --force`
+Will install @cyclonedx/cyclonedx-npm@1.10.0, which is a breaking change
+node_modules/libxmljs2
+  @cyclonedx/cyclonedx-library  >=1.14.0-rc.0
+  Depends on vulnerable versions of libxmljs2
+  node_modules/@cyclonedx/cyclonedx-library
+    @cyclonedx/cyclonedx-npm  >=1.11.0
+    Depends on vulnerable versions of @cyclonedx/cyclonedx-library
+    node_modules/@cyclonedx/cyclonedx-npm
+
+semver  7.0.0 - 7.5.1
+Severity: high
+semver vulnerable to Regular Expression Denial of Service - https://github.com/advisories/GHSA-c2qf-rxjj-qqgw
+fix available via `npm audit fix`
+node_modules/simple-update-notifier/node_modules/semver
+  simple-update-notifier  1.0.7 - 1.1.0
+  Depends on vulnerable versions of semver
+  node_modules/simple-update-notifier
+    nodemon  2.0.19 - 2.0.22
+    Depends on vulnerable versions of simple-update-notifier
+    node_modules/nodemon
+
+6 vulnerabilities (3 high, 3 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
