@@ -49,6 +49,10 @@ const UserRegisterForm: React.FC = () => {
         if (!password.trim()) {
             newErrors.password = t('register.validate.password');
         }
+        if (password.length < 8) newErrors.password = 'Password must be at least 8 characters.';
+        if (!/[A-Z]/.test(password)) {
+            newErrors.password = 'Password must contain at least one uppercase letter.';
+        }
 
         if (!firstName.trim()) {
             newErrors.firstName = t('register.validate.firstName');

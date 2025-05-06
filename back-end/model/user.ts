@@ -157,6 +157,9 @@ export class User {
 
     async setPassword(password: string): Promise<void> {
         if (password.length < 8) throw new Error('Password must be at least 8 characters.');
+        if (!/[A-Z]/.test(password)) {
+            throw new Error('Password must contain at least one uppercase letter.');
+        }
         const hashedPassword = await bcrypt.hash(password, 12);
         this.password = hashedPassword;
     }
