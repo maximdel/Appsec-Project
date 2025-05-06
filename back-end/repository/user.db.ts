@@ -158,6 +158,18 @@ const createUser = async (user: User): Promise<User> => {
     }
 };
 
+const removeUser = async (username: string): Promise<string> => {
+    try {
+        await database.user.delete({
+            where: { username: username },
+        });
+        return `User with username ${username} deleted successfully.`;
+    } catch (error) {
+        console.error('Failed to delete user:', error);
+        throw new Error('Database error while deleting user. See server log for details.');
+    }
+};
+
 export default {
     getAllPlayers,
     getAllUsers,
@@ -167,4 +179,5 @@ export default {
     getUsersByRole,
     getUserByUsername,
     createUser,
+    removeUser,
 };

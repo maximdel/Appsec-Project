@@ -364,6 +364,17 @@ userRouter.post('/register', async (req: Request, res: Response, next: NextFunct
     }
 });
 
+// Remove user addition for Application Security
+userRouter.delete('/:username', async (req, res, next) => {
+    try {
+        const { username } = req.params;
+        const message = await userService.removeUser({ username });
+        res.status(200).json({ message });
+    } catch (err) {
+        next(err);
+    }
+});
+
 /**
  * @swagger
  * /users/role/{role}:

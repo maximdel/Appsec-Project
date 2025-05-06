@@ -32,7 +32,6 @@ const updateUser = async (user: User) => {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-
         },
         body: JSON.stringify(user),
     });
@@ -82,6 +81,18 @@ const registerUser = (user: User) => {
     });
 };
 
+const removeUser = (username: string) => {
+    const token = JSON.parse(localStorage.getItem('loggedInUser') || '{}')?.token;
+
+    return fetch(process.env.NEXT_PUBLIC_API_URL + `/users/${encodeURIComponent(username)}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
+
 const UserService = {
     getAllPlayers,
     getAllUsers,
@@ -90,6 +101,7 @@ const UserService = {
     updateUser,
     loginUser,
     registerUser,
+    removeUser,
 };
 
 export default UserService;

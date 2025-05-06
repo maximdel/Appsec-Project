@@ -160,6 +160,14 @@ const createUser = async ({
     return await userDb.createUser(user);
 };
 
+const removeUser = async ({ username }: { username: string }): Promise<string> => {
+    const user = await getUserByUsername({ username });
+    if (user) {
+        return await userDb.removeUser(username);
+    }
+    throw new Error(`User with username ${username} does not exist.`);
+};
+
 export default {
     getAllPlayers,
     getAllUsers,
@@ -169,4 +177,5 @@ export default {
     getUsersByRole,
     authenticate,
     createUser,
+    removeUser,
 };
