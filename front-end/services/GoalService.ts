@@ -1,10 +1,10 @@
 const getGoalsWithDetails = async (matchId: number) => {
-    const token = JSON.parse(localStorage.getItem('loggedInUser') || '{}')?.token;
-
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/goals/match/${matchId}`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            credentials: 'include',
+
+            headers: { 'Content-Type': 'application/json' },
         });
 
         if (!response.ok) {
@@ -20,13 +20,11 @@ const getGoalsWithDetails = async (matchId: number) => {
 };
 
 const deleteGoalById = async (id: number) => {
-    const token = JSON.parse(localStorage.getItem('loggedInUser') || '{}')?.token;
-
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/goals/${id}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
         },
     });
 
@@ -40,7 +38,7 @@ const deleteGoalById = async (id: number) => {
 
 const GoalService = {
     getGoalsWithDetails,
-    deleteGoalById
+    deleteGoalById,
 };
 
 export default GoalService;

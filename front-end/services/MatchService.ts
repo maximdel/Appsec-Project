@@ -1,25 +1,21 @@
 import { Match } from '@types';
 
 const getAllMatches = async () => {
-    const token = JSON.parse(localStorage.getItem('loggedInUser') || '{}')?.token;
-
     return fetch(process.env.NEXT_PUBLIC_API_URL + '/matches', {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
         },
     });
 };
 
 const getMatchById = async (id: number) => {
-    const token = JSON.parse(localStorage.getItem('loggedInUser') || '{}')?.token;
-
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/matches/${id}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
         },
     });
 
@@ -32,13 +28,11 @@ const getMatchById = async (id: number) => {
 };
 
 const createMatch = async (matchData: Match): Promise<Match> => {
-    const token = JSON.parse(localStorage.getItem('loggedInUser') || '{}')?.token;
-
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/matches`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(matchData),
     });
@@ -52,13 +46,11 @@ const createMatch = async (matchData: Match): Promise<Match> => {
 };
 
 const updateMatch = async (id: string, matchData: Partial<Match>): Promise<Match> => {
-    const token = JSON.parse(localStorage.getItem('loggedInUser') || '{}')?.token;
-
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/matches/${id}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(matchData),
     });
@@ -72,8 +64,6 @@ const updateMatch = async (id: string, matchData: Partial<Match>): Promise<Match
 };
 
 const getLatestMatches = async (limit?: number, teamId?: number) => {
-    const token = JSON.parse(localStorage.getItem('loggedInUser') || '{}')?.token;
-
     const queryParams = new URLSearchParams();
 
     if (limit) queryParams.append('limit', limit.toString());
@@ -83,7 +73,8 @@ const getLatestMatches = async (limit?: number, teamId?: number) => {
         `${process.env.NEXT_PUBLIC_API_URL}/matches/latest?${queryParams.toString()}`,
         {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
         }
     );
 };

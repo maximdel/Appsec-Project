@@ -1,40 +1,47 @@
-import React, { useEffect, useState } from 'react';
-import Head from 'next/head';
 import Header from '@components/header/header';
 import MatchTile from '@components/match/matchTile';
+import PlaceholderTable from '@components/TeacherTabel';
+import WelcomeMessage from '@components/WelcomeMessage';
 import MatchService from '@services/MatchService';
+import UserService from '@services/UserService';
 import { Match, UserStorage } from '@types';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import Head from 'next/head';
+import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
-import PlaceholderTable from '@components/TeacherTabel';
-import WelcomeMessage from '@components/WelcomeMessage';
 
 const HomePage: React.FC = () => {
     const [loggedInUser, setLoggedInUser] = useState<UserStorage | null>(null);
     const { t } = useTranslation();
 
+    // Fetch current user from HttpOnly cookie
     useEffect(() => {
-        const storedUser = localStorage.getItem('loggedInUser');
-        if (storedUser) {
-            setLoggedInUser(JSON.parse(storedUser));
-        }
+        UserService.getCurrentUser()
+            .then(async (res) => {
+                if (res.ok) {
+                    const user = await res.json();
+                    setLoggedInUser(user);
+                } else {
+                    setLoggedInUser(null);
+                }
+            })
+            .catch(() => setLoggedInUser(null));
     }, []);
 
+    // Fetch latest matches, include credentials in service implementation
     const fetchLatestMatches = async () => {
         const response = await MatchService.getLatestMatches(10);
-
         if (!response.ok) {
             const errorMessage =
                 response.status === 401 ? t('permissions.unauthorized') : response.statusText;
             throw new Error(errorMessage);
         }
-
         const matches = await response.json();
-        return matches;
+        return matches as Match[];
     };
 
-    const { data: matches } = useSWR('fetchLatestMatches', fetchLatestMatches, {
+    const { data: matches, error } = useSWR('fetchLatestMatches', fetchLatestMatches, {
         refreshInterval: 10000,
     });
 
@@ -54,8 +61,12 @@ const HomePage: React.FC = () => {
                 </div>
                 <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
                     {loggedInUser ? (
-                        matches?.map((match: Match) => (
-                            <MatchTile key={match.id} match={match} teamId={0} />
+                        matches?.map((match) => (
+                            <MatchTile
+                                key={match.id}
+                                match={match}
+                                teamId={loggedInUser.teamId ?? 0}
+                            />
                         ))
                     ) : (
                         <p className="text-center col-span-full text-gray-500">
@@ -63,6 +74,7 @@ const HomePage: React.FC = () => {
                         </p>
                     )}
                 </div>
+                {error && <p className="mt-4 text-red-700 text-center">{error.message}</p>}
             </main>
         </>
     );
@@ -70,7 +82,6 @@ const HomePage: React.FC = () => {
 
 export const getServerSideProps = async (context: { locale: any }) => {
     const { locale } = context;
-
     return {
         props: {
             ...(await serverSideTranslations(locale ?? 'en', ['common'])),

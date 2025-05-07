@@ -1,21 +1,29 @@
+import UserService from '@services/UserService';
 import { UserStorage } from '@types';
 import { useTranslation } from 'next-i18next';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import Language from '../language/Language';
+import BackButton from './backButton';
 import OverviewDropdown from './overviewDropdown';
 import UserDropdown from './userDropdown';
-import BackButton from './backButton';
 
 const Header: React.FC = () => {
     const [loggedInUser, setLoggedInUser] = useState<UserStorage | null>(null);
     const { t } = useTranslation();
 
+    // Utilize cookies instead of localStorage
     useEffect(() => {
-        const storedUser = localStorage.getItem('loggedInUser');
-        if (storedUser) {
-            setLoggedInUser(JSON.parse(storedUser));
-        }
+        UserService.getCurrentUser()
+            .then(async (res) => {
+                if (res.ok) {
+                    const user = await res.json();
+                    setLoggedInUser(user);
+                }
+            })
+            .catch(() => {
+                setLoggedInUser(null);
+            });
     }, []);
 
     return (

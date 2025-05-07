@@ -89,6 +89,7 @@
 
 import express, { NextFunction, Request, Response } from 'express';
 
+import { UnauthorizedError } from 'express-jwt/dist/errors/UnauthorizedError';
 import rateLimit from 'express-rate-limit';
 import userService from '../service/user.service';
 import { Role, UserInput } from '../types';
@@ -164,64 +165,6 @@ userRouter.get('/players', async (req: Request, res: Response, next: NextFunctio
     try {
         const players = await userService.getAllPlayers();
         res.status(200).json(players);
-    } catch (error) {
-        next(error);
-    }
-});
-
-/**
- * @swagger
- * /users/{username}:
- *   get:
- *     summary: Retrieve a user by username
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: username
- *         required: true
- *         schema:
- *           type: string
- *         description: The unique username of the user
- *     responses:
- *       200:
- *         description: Successfully retrieved user details
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       404:
- *         description: User not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: "error"
- *                 errorMessage:
- *                   type: string
- *                   example: "User not found."
- *       500:
- *         description: Bad request due to an error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: "error"
- *                 errorMessage:
- *                   type: string
- *                   example: "An error occurred."
- */
-
-userRouter.get('/:username', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const username = req.params.username;
-        const user = await userService.getUserByUsername({ username });
-        res.json(user);
     } catch (error) {
         next(error);
     }
@@ -319,9 +262,114 @@ const loginLimiter = rateLimit({
 
 userRouter.post('/login', loginLimiter, async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userInput = <UserInput>req.body;
-        const response = await userService.authenticate(userInput);
-        res.status(200).json({ message: 'Authentication successful', ...response });
+        const userInput = req.body as UserInput;
+        const auth = await userService.authenticate(userInput);
+        const isProd = process.env.NODE_ENV === 'production';
+
+        return res
+            .cookie('token', auth.token, {
+                httpOnly: true,
+                secure: isProd, // only send over HTTPS in production
+                sameSite: isProd ? 'none' : 'lax', // none for cross-site fetches when secure, lax in dev
+                maxAge: 1000 * 60 * 60 * Number(process.env.JWT_EXPIRES_HOURS),
+                // ensure it’s sent on every route
+                path: '/',
+            })
+            .status(200)
+            .json({
+                message: 'Authentication successful',
+                username: auth.username,
+                fullname: auth.fullname,
+                role: auth.role,
+                ...(auth.teamId && { teamId: auth.teamId }),
+            });
+    } catch (error) {
+        next(error);
+    }
+});
+
+userRouter.post('/logout', (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+    });
+    res.json({ message: 'Logged out successfully.' });
+});
+
+// Reads JWT from cookie, looks up user and returns public user object
+userRouter.get('/me', async (req: Request & { auth?: { username: string } }, res, next) => {
+    // If express-jwt failed auth, it will skip you and go straight to the error handler.
+    // So at this point, req.auth is always populated.
+    try {
+        if (!req.auth) {
+            throw new UnauthorizedError('credentials_required', {
+                message: 'Not authenticated',
+            });
+        }
+
+        const user = await userService.getUserByUsername({ username: req.auth.username });
+        // Only send one response:
+        return res.json(user);
+    } catch (err) {
+        // And don’t send another response here—just forward to the error middleware:
+        return next(err);
+    }
+});
+
+/**
+ * @swagger
+ * /users/{username}:
+ *   get:
+ *     summary: Retrieve a user by username
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique username of the user
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "error"
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "User not found."
+ *       500:
+ *         description: Bad request due to an error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "error"
+ *                 errorMessage:
+ *                   type: string
+ *                   example: "An error occurred."
+ */
+
+userRouter.get('/:username', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const username = req.params.username;
+        const user = await userService.getUserByUsername({ username });
+        res.json(user);
     } catch (error) {
         next(error);
     }

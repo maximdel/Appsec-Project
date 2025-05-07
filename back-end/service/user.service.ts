@@ -96,8 +96,6 @@ const getUsersByRole = async (role: Role): Promise<any[]> => {
 
 // Authentication response remains unchanged—but uses raw user for check
 const authenticate = async ({ username, password }: UserInput): Promise<AuthenticationResponse> => {
-    // for JSON response we need the public user details
-    const publicUser = await getUserByUsername({ username });
     // for password check we need the hashed pw
     const rawUser = await userDb.getUserByUsername({ username })!;
     if (!rawUser) throw new Error('User not found.');
