@@ -7,6 +7,7 @@ import swaggerUi from 'swagger-ui-express';
 
 import { expressjwt } from 'express-jwt';
 import helmet from 'helmet';
+import jwt from 'jsonwebtoken';
 import goalRouter from './controller/goal.routes';
 import matchRouter from './controller/match.routes';
 import teamRouter from './controller/team.routes';
@@ -69,6 +70,53 @@ app.use(
             '/status',
         ],
     })
+);
+
+// JWT Rotation
+// (seconds)
+const TTL = Number(process.env.JWT_EXPIRES_HOURS) * 3600;
+// if less than 15min left, rotate
+const THRESHOLD = 15 * 60;
+
+// Auto-refresh middleware
+app.use(
+    (
+        req: Request & { auth?: { username: string; role: string; exp: number; iat: number } },
+        res: Response,
+        next: NextFunction
+    ) => {
+        const token = req.cookies.token;
+        if (!token || !req.auth) {
+            return next();
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+        const timeLeft = req.auth.exp - now;
+
+        const SECRET = process.env.JWT_SECRET;
+        if (!SECRET) {
+            throw new Error('Missing JWT_SECRET environment variable');
+        }
+        // only rotate if there’s still some life left, but under the threshold
+        if (timeLeft > 0 && timeLeft < THRESHOLD) {
+            // re-issue a fresh token with same payload
+            const newToken = jwt.sign(
+                { username: req.auth.username, role: req.auth.role },
+                SECRET,
+                { expiresIn: `${process.env.JWT_EXPIRES_HOURS}h`, issuer: 'courses_app' }
+            );
+            // reset the cookie (same flags you use on login)
+            res.cookie('token', newToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+                maxAge: TTL * 1000,
+                path: '/',
+            });
+        }
+
+        next();
+    }
 );
 
 // Register routers
