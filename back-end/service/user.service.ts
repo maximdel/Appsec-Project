@@ -134,7 +134,6 @@ const createUser = async ({
     return newUser.toPublic();
 };
 
-// Remove user stays the same
 const removeUser = async ({ username }: { username: string }): Promise<string> => {
     const exists = await userDb.getUserByUsername({ username });
     if (!exists) throw new Error(`User with username ${username} does not exist.`);
@@ -143,7 +142,6 @@ const removeUser = async ({ username }: { username: string }): Promise<string> =
 
 // Forgot-password kick-off (returns only a message)
 export async function forgotPassword({ username }: { username: string }): Promise<string> {
-    // we want to verify user exists, but publicUser has no pw
     const user = await getUserByUsername({ username });
 
     const token = randomBytes(32).toString('hex');

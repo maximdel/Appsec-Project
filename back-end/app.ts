@@ -16,17 +16,30 @@ import userRouter from './controller/user.routes';
 const app = express();
 app.use(helmet());
 
-// For storing tokens in secure cookies instead of localStorage:
-app.use(cookieParser());
+// HSTS for 1 year with subdomains included
+app.use(
+    helmet.hsts({
+        maxAge: 31536000,
+        includeSubDomains: true,
+    })
+);
 
+// CSP: Only allow own origin for scripts/styles/images
 app.use(
     helmet.contentSecurityPolicy({
         directives: {
-            // Allow connections to own server and the external API
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'"],
+            imgSrc: ["'self'"],
             connectSrc: ["'self'"],
+            objectSrc: ["'none'"],
         },
     })
 );
+
+// For storing tokens in secure cookies instead of localStorage:
+app.use(cookieParser());
 
 dotenv.config();
 const port = process.env.APP_PORT || 3000;
