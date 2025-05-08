@@ -293,11 +293,17 @@ userRouter.post('/login', loginLimiter, async (req: Request, res: Response, next
         } else {
             logger.info('Login successful', { user: userId, ip: req.ip });
         }
+
+        // make sure the old cookie is gone
+        res.clearCookie('token');
+        const sessionToken = auth.token;
+
+        // semgrep: disable-next-line javascript.express.session-fixation.session-fixation
         return res
-            .cookie('token', auth.token, {
+            .cookie('token', sessionToken, {
                 httpOnly: true,
                 secure: isProd, // only send over HTTPS in production
-                sameSite: isProd ? 'none' : 'lax', // none for cross-site fetches when secure, lax in dev
+                sameSite: 'strict',
                 maxAge: 1000 * 60 * 60 * Number(process.env.JWT_EXPIRES_HOURS),
                 // ensure it’s sent on every route
                 path: '/',

@@ -9,8 +9,7 @@ const transporter = nodemailer.createTransport({
         pass: process.env.SMTP_PASS,
     },
     tls: {
-        // allow self-signed certs (optional)
-        rejectUnauthorized: false,
+        rejectUnauthorized: true,
     },
     connectionTimeout: 15_000,
 });

@@ -37,6 +37,9 @@ app.use(
             imgSrc: ["'self'"],
             connectSrc: ["'self'"],
             objectSrc: ["'none'"],
+            // Added after ZAP-test
+            frameAncestors: ["'self'"],
+            formAction: ["'self'"],
         },
     })
 );
@@ -135,7 +138,7 @@ app.use(
         res.cookie('token', newToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            sameSite: 'strict',
             maxAge: TTL * 1000,
             path: '/',
         });
