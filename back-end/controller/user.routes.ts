@@ -93,6 +93,7 @@ import { UnauthorizedError } from 'express-jwt/dist/errors/UnauthorizedError';
 import rateLimit from 'express-rate-limit';
 import userService from '../service/user.service';
 import { Role, UserInput } from '../types';
+import { logger } from '../util/logger';
 
 const userRouter = express.Router();
 
@@ -225,11 +226,29 @@ userRouter.put('/:id', async (req: Request, res: Response, next: NextFunction) =
 
 // Brute-force mitigation:
 const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // limit each IP to 5 requests per windowMs
-    message: {
-        status: 'error',
-        message: 'Too many login attempts from this IP, please try again after 15 minutes',
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    handler: async (req, res, next) => {
+        // pull the username the user just tried
+        const username = (req.body as any)?.username as string | undefined;
+        let userId: number | 'unknown' = 'unknown';
+
+        if (username) {
+            try {
+                const user = await userService.getUserIdByUsername({ username });
+                userId = user ?? 'unknown';
+            } catch {}
+        }
+
+        logger.warn('Too many login attempts', {
+            user: userId,
+            ip: req.ip,
+        });
+
+        res.status(429).json({
+            status: 'error',
+            message: 'Too many login attempts, please try again later.',
+        });
     },
 });
 
@@ -261,11 +280,19 @@ const loginLimiter = rateLimit({
  */
 
 userRouter.post('/login', loginLimiter, async (req: Request, res: Response, next: NextFunction) => {
+    const userInput = req.body as UserInput;
+    const user = await userService.getUserByUsername({ username: userInput.username });
+    const userId = user.id;
+
     try {
-        const userInput = req.body as UserInput;
         const auth = await userService.authenticate(userInput);
         const isProd = process.env.NODE_ENV === 'production';
 
+        if (user.role === 'ADMIN') {
+            logger.info('ADMIN Login successful', { user: userId, ip: req.ip });
+        } else {
+            logger.info('Login successful', { user: userId, ip: req.ip });
+        }
         return res
             .cookie('token', auth.token, {
                 httpOnly: true,
@@ -283,8 +310,11 @@ userRouter.post('/login', loginLimiter, async (req: Request, res: Response, next
                 role: auth.role,
                 ...(auth.teamId && { teamId: auth.teamId }),
             });
-    } catch (error) {
-        next(error);
+    } catch (error: any) {
+        if (user.role === 'ADMIN') {
+            logger.warn('ADMIN Login failed', { user: userId, ip: req.ip, reason: error.message });
+        }
+        return res.status(401).json({ status: 'error', message: error.message });
     }
 });
 
@@ -402,26 +432,66 @@ userRouter.get('/:username', async (req: Request, res: Response, next: NextFunct
  *               $ref: '#/components/schemas/Error'
  */
 
-userRouter.post('/register', async (req: Request, res: Response, next: NextFunction) => {
+userRouter.post('/register', async (req, res, next) => {
+    const userInput = req.body as UserInput;
+
     try {
-        const userInput = <UserInput>req.body;
-        const user = await userService.createUser(userInput);
-        res.status(200).json(user);
-    } catch (error) {
-        next(error);
+        const newUser = await userService.createUser(userInput);
+
+        logger.info('User registered', {
+            userId: newUser.id,
+            username: newUser.username,
+            ip: req.ip,
+        });
+
+        // 201 is more correct for creation
+        return res.status(201).json(newUser);
+    } catch (err: any) {
+        // log the *attempted* username, not the (nonexistent) newUser
+        logger.info('User registration failed', {
+            username: userInput.username,
+            ip: req.ip,
+            reason: err.message,
+        });
+        // if you want to convert this to a 409 conflict instead of a 400:
+        if (err.message.includes('already registered')) {
+            return res.status(409).json({ status: 'error', message: err.message });
+        }
+        return next(err);
     }
 });
 
 // Remove user addition for Application Security
-userRouter.delete('/:username', async (req, res, next) => {
+userRouter.delete('/:username', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { username } = req.params;
+
+        // 1) lookup user to delete (so we can report its ID)
+        const deletedUserId = await userService.getUserIdByUsername({ username });
+
+        // 2) perform the delete
         const message = await userService.removeUser({ username });
+
+        // 3) grab the admin’s username out of the JWT…
+        const adminUsername = (req as Request & { auth?: { username: string } }).auth?.username;
+
+        // …then look up their numeric ID the same way
+        const adminId = adminUsername
+            ? await userService.getUserIdByUsername({ username: adminUsername })
+            : undefined;
+
+        logger.info('User deleted', {
+            admin: adminId,
+            deletedUserId,
+            ip: req.ip,
+        });
+
         res.status(200).json({ message });
     } catch (err) {
         next(err);
     }
 });
+
 // 1) Kick off the flow (by username)
 userRouter.post('/forgot-password', async (req, res, next) => {
     try {
@@ -435,14 +505,31 @@ userRouter.post('/forgot-password', async (req, res, next) => {
 
 // 2) Complete the flow
 userRouter.post('/reset-password', async (req, res, next) => {
+    const { token, newPassword } = req.body as {
+        token: string;
+        newPassword: string;
+    };
+
+    const { username } = await userService.findByResetToken({ token });
+    const id = await userService.getUserIdByUsername({ username });
     try {
-        const { token, newPassword } = req.body as {
-            token: string;
-            newPassword: string;
-        };
         const msg = await userService.resetPassword({ token, newPassword });
+
+        if (id) {
+            logger.info('Password reset completed', {
+                user: id,
+                ip: req.ip,
+            });
+        }
         res.json({ message: msg });
-    } catch (err) {
+    } catch (err: any) {
+        if (id) {
+            logger.warn('Password reset failed', {
+                user: id,
+                ip: req.ip,
+                reason: err.message,
+            });
+        }
         next(err);
     }
 });

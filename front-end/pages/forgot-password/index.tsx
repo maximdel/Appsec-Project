@@ -15,8 +15,10 @@ const ForgotPasswordPage: React.FC = () => {
         setError(null);
 
         try {
+            console.log('⏳ About to send forgot-password for', username);
             const res = await UserService.forgotPassword(username);
             const body = await res.json();
+            console.log('🛎️ Response came back', res);
             if (res.ok) setMessage(body.message);
             else setError(body.message || t('general.error'));
         } catch (err: any) {

@@ -49,7 +49,7 @@ type LocationInput = {
 };
 
 type AuthenticationRequest = {
-    email: string;
+    username: string;
     password: string;
 };
 
@@ -60,6 +60,7 @@ type AuthenticationResponse = {
     role: string;
     teamId?: number;
 };
+
 export type {
     AuthenticationRequest,
     AuthenticationResponse,

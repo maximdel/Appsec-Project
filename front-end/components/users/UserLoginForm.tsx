@@ -55,7 +55,11 @@ const UserLoginForm: React.FC = () => {
                 router.push('/');
             }, 2000);
         } else if (response.status === 401) {
+            const { status, errorMessage } = await response.json();
+            setStatusMessages([{ message: errorMessage, type: 'error' }]);
+        } else if (response.status === 429) {
             const { errorMessage } = await response.json();
+            console.log('errormessage:' + errorMessage);
             setStatusMessages([{ message: errorMessage, type: 'error' }]);
         } else {
             setStatusMessages([
